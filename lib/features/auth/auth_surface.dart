@@ -83,7 +83,7 @@ class DebatorAuthFrame extends StatelessWidget {
 
             final content = isWide
                 ? Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Expanded(
                         child: _IntroPanel(
