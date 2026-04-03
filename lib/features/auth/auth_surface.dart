@@ -123,20 +123,17 @@ class DebatorAuthFrame extends StatelessWidget {
                     ],
                   );
 
-            return Scrollbar(
-              thumbVisibility: isWide,
-              child: SingleChildScrollView(
-                padding: EdgeInsets.fromLTRB(
-                  horizontalPadding,
-                  topPadding,
-                  horizontalPadding,
-                  28,
-                ),
-                child: Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 1260),
-                    child: content,
-                  ),
+            return SingleChildScrollView(
+              padding: EdgeInsets.fromLTRB(
+                horizontalPadding,
+                topPadding,
+                horizontalPadding,
+                28,
+              ),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 1260),
+                  child: content,
                 ),
               ),
             );
