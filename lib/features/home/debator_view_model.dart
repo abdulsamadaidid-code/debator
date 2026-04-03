@@ -60,9 +60,11 @@ class DebatorViewModel extends ChangeNotifier {
   int get totalAudience =>
       _repository.debates.fold(0, (sum, debate) => sum + debate.watchingNow);
 
-  List<Debate> get prototypeUserDebates => _repository.debates.where((debate) {
-        return debate.participants.any((participant) => participant.handle == '@you');
-      }).toList();
+  List<Debate> debatesForParticipantHandle(String handle) {
+    return _repository.debates.where((debate) {
+      return debate.participants.any((participant) => participant.handle == handle);
+    }).toList();
+  }
 
   Future<void> initialize() async {
     if (_hasInitialized) {

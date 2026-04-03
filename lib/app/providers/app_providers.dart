@@ -53,6 +53,15 @@ final viewerProfileProvider = FutureProvider<ViewerProfile?>((ref) async {
   return ref.watch(accountRepositoryProvider).fetchViewerProfile();
 });
 
+final currentViewerProfileProvider = Provider<ViewerProfile?>((ref) {
+  final config = ref.watch(appConfigProvider);
+  if (config.isMock) {
+    return ViewerProfile.demo;
+  }
+
+  return ref.watch(viewerProfileProvider).asData?.value;
+});
+
 final sessionControllerProvider = Provider<SessionController>(
   SessionController.new,
 );
