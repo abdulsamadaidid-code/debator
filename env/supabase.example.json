@@ -1,5 +1,5 @@
 {
+  "DEBATOR_ENV": "staging",
   "SUPABASE_URL": "https://your-project-ref.supabase.co",
-  "SUPABASE_ANON_KEY": "your-anon-or-publishable-key",
-  "DEBATOR_USE_SUPABASE": "true"
+  "SUPABASE_ANON_KEY": "your-anon-or-publishable-key"
 }

@@ -14,7 +14,7 @@ The first backend pass includes:
 
 ## Running With Supabase
 
-The safe default is still the mock datasource. To run the app against Supabase instead, use the local env file:
+The safe default is still `mock` mode. To run the app against Supabase instead, use the local env file:
 
 ```bash
 flutter run --dart-define-from-file=env/supabase.local.json
@@ -22,9 +22,14 @@ flutter run --dart-define-from-file=env/supabase.local.json
 
 The tracked example file lives at [`supabase.example.json`](/Users/tobbi/Desktop/Debator/env/supabase.example.json).
 
+Environment modes:
+- `mock`: no Supabase required, routes into the product demo
+- `staging`: requires Supabase credentials and enables the auth/app shell
+- `production`: requires Supabase credentials and fails fast if configuration is missing
+
 ## Current Note
 
-The project is linked and ready, but applying migrations from this machine is currently blocked by remote Postgres connectivity. The migration and seed files are ready to push as soon as that connection issue clears.
+The project is linked and the initial SQL has already been applied in Supabase. This branch adds the routed welcome, auth, onboarding, and app-shell foundation plus typed environment config in [`app_config.dart`](/Users/tobbi/Desktop/Debator/lib/app/config/app_config.dart).
 
 ## Getting Started
 
