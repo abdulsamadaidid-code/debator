@@ -6,7 +6,7 @@ abstract class AccountDataSource {
 
   Stream<User?> authStateChanges();
 
-  Future<void> sendMagicLink({required String email});
+  Future<void> sendMagicLink({required String email, String? redirectTo});
 
   Future<void> signOut();
 

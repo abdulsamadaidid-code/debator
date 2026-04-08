@@ -16,8 +16,11 @@ class SupabaseAccountDataSource implements AccountDataSource {
   }
 
   @override
-  Future<void> sendMagicLink({required String email}) async {
-    await _client.auth.signInWithOtp(email: email);
+  Future<void> sendMagicLink({required String email, String? redirectTo}) async {
+    await _client.auth.signInWithOtp(
+      email: email,
+      emailRedirectTo: redirectTo,
+    );
   }
 
   @override

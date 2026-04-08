@@ -170,7 +170,7 @@ class _DebatorAuthPageState extends State<DebatorAuthPage> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          'This placeholder flow keeps the identity journey simple for now. Later it can become Supabase auth with profile completion and topic preferences.',
+                          'This sign-in flow is now wired for the product shell. On native devices, Debator is prepared to receive the magic-link callback and continue into onboarding.',
                           style: theme.textTheme.bodyMedium?.copyWith(
                             color: colorScheme.onSurface.withValues(
                               alpha: 0.76,

@@ -3,6 +3,7 @@ import 'package:debator/data/repositories/account_repository.dart';
 import 'package:debator/data/repositories/debate_repository.dart';
 import 'package:debator/domain/models/viewer_profile.dart';
 import 'package:debator/features/home/debator_view_model.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -74,7 +75,11 @@ class SessionController {
   AccountRepository get _repository => _ref.read(accountRepositoryProvider);
 
   Future<void> sendMagicLink(String email) async {
-    await _repository.sendMagicLink(email: email);
+    final appConfig = _ref.read(appConfigProvider);
+    await _repository.sendMagicLink(
+      email: email,
+      redirectTo: kIsWeb ? null : appConfig.authCallbackUrl,
+    );
   }
 
   Future<void> signOut() async {

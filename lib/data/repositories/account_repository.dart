@@ -12,8 +12,8 @@ class AccountRepository {
 
   Stream<User?> authStateChanges() => _dataSource.authStateChanges();
 
-  Future<void> sendMagicLink({required String email}) {
-    return _dataSource.sendMagicLink(email: email);
+  Future<void> sendMagicLink({required String email, String? redirectTo}) {
+    return _dataSource.sendMagicLink(email: email, redirectTo: redirectTo);
   }
 
   Future<void> signOut() => _dataSource.signOut();

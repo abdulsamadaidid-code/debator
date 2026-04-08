@@ -21,7 +21,7 @@ class MockAccountDataSource implements AccountDataSource {
   Future<ViewerProfile?> fetchViewerProfile() async => null;
 
   @override
-  Future<void> sendMagicLink({required String email}) {
+  Future<void> sendMagicLink({required String email, String? redirectTo}) {
     throw StateError('Authentication is unavailable in mock mode.');
   }
 

@@ -32,17 +32,29 @@ class AppConfig {
     required this.environment,
     required this.supabaseUrl,
     required this.supabaseAnonKey,
+    required this.authCallbackScheme,
+    required this.authCallbackHost,
   });
 
   final AppEnvironment environment;
   final String supabaseUrl;
   final String supabaseAnonKey;
+  final String authCallbackScheme;
+  final String authCallbackHost;
 
   static AppConfig fromEnvironment() {
     return AppConfig(
       environment: AppEnvironment.fromEnvironment(),
       supabaseUrl: const String.fromEnvironment('SUPABASE_URL'),
       supabaseAnonKey: const String.fromEnvironment('SUPABASE_ANON_KEY'),
+      authCallbackScheme: String.fromEnvironment(
+        'DEBATOR_AUTH_CALLBACK_SCHEME',
+        defaultValue: 'debator',
+      ),
+      authCallbackHost: String.fromEnvironment(
+        'DEBATOR_AUTH_CALLBACK_HOST',
+        defaultValue: 'login-callback',
+      ),
     );
   }
 
@@ -50,6 +62,8 @@ class AppConfig {
   bool get requiresSupabase => !isMock;
   bool get hasSupabaseCredentials =>
       supabaseUrl.isNotEmpty && supabaseAnonKey.isNotEmpty;
+
+  String get authCallbackUrl => '$authCallbackScheme://$authCallbackHost/';
 
   void validate() {
     if (requiresSupabase && !hasSupabaseCredentials) {

@@ -27,6 +27,11 @@ Environment modes:
 - `staging`: requires Supabase credentials and enables the auth/app shell
 - `production`: requires Supabase credentials and fails fast if configuration is missing
 
+Native auth callback config:
+- `DEBATOR_AUTH_CALLBACK_SCHEME`: defaults to `debator`
+- `DEBATOR_AUTH_CALLBACK_HOST`: defaults to `login-callback`
+- the app uses these for mobile magic-link return URLs like `debator://login-callback/`
+
 ## Current Note
 
 The project is linked and the initial SQL has already been applied in Supabase. This branch adds the routed welcome, auth, onboarding, and app-shell foundation plus typed environment config in [`app_config.dart`](/Users/tobbi/Desktop/Debator/lib/app/config/app_config.dart).

@@ -22,6 +22,8 @@ void main() {
         bootstrap: AppBootstrapResult(
           config: const AppConfig(
             environment: AppEnvironment.mock,
+            authCallbackScheme: 'debator',
+            authCallbackHost: 'login-callback',
             supabaseUrl: '',
             supabaseAnonKey: '',
           ),
