@@ -1,5 +1,6 @@
 import 'package:debator/app/pages/app_splash_page.dart';
 import 'package:debator/app/providers/app_providers.dart';
+import 'package:debator/features/account/account_page.dart';
 import 'package:debator/features/auth/auth.dart';
 import 'package:debator/features/home/debator_home_shell.dart';
 import 'package:flutter/material.dart';
@@ -51,6 +52,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const DebatorHomeShell(),
       ),
       GoRoute(
+        path: '/account',
+        builder: (context, state) => const DebatorAccountPage(),
+      ),
+      GoRoute(
         path: '/debate/:debateId',
         builder: (context, state) {
           return DebateDetailPage(
@@ -66,7 +71,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final isAuth = location == '/auth';
       final isOnboarding = location == '/onboarding';
       final isAppSurface =
-          location == '/app' || location.startsWith('/debate/');
+          location == '/app' ||
+          location == '/account' ||
+          location.startsWith('/debate/');
 
       if (config.isMock) {
         if (isSplash || isAuth || isOnboarding) {

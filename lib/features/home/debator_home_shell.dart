@@ -992,16 +992,10 @@ class _ProfileTab extends ConsumerWidget {
                             width: isStacked ? 0 : 18,
                             height: isStacked ? 18 : 0,
                           ),
-                          OutlinedButton.icon(
-                            onPressed: () async {
-                              await ref.read(sessionControllerProvider).signOut();
-                              if (!context.mounted) {
-                                return;
-                              }
-                              context.go('/welcome');
-                            },
-                            icon: const Icon(Icons.logout_rounded),
-                            label: const Text('Sign out'),
+                          FilledButton.tonalIcon(
+                            onPressed: () => context.push('/account'),
+                            icon: const Icon(Icons.settings_rounded),
+                            label: const Text('Account'),
                           ),
                         ],
                       ],
