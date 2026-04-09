@@ -6,7 +6,11 @@
 // tree, read text, and verify that the values of widget properties are correct.
 
 import 'package:debator/app/app.dart';
+import 'package:debator/app/bootstrap.dart';
+import 'package:debator/app/config/app_config.dart';
+import 'package:debator/data/repositories/account_repository.dart';
 import 'package:debator/data/repositories/debate_repository.dart';
+import 'package:debator/data/services/mock_account_data_source.dart';
 import 'package:debator/data/services/mock_debate_data_source.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -15,16 +19,32 @@ void main() {
   testWidgets('loads discover tab and can create a debate', (tester) async {
     await tester.pumpWidget(
       DebatorApp(
-        repository: DebateRepository(dataSource: MockDebateDataSource()),
+        bootstrap: AppBootstrapResult(
+          config: const AppConfig(
+            environment: AppEnvironment.mock,
+            authCallbackScheme: 'debator',
+            authCallbackHost: 'login-callback',
+            supabaseUrl: '',
+            supabaseAnonKey: '',
+          ),
+          debateRepository: DebateRepository(
+            dataSource: MockDebateDataSource(),
+          ),
+          accountRepository: AccountRepository(
+            dataSource: MockAccountDataSource(),
+          ),
+        ),
       ),
     );
     await tester.pump(const Duration(milliseconds: 300));
     await tester.pumpAndSettle();
 
-    expect(
-      find.text('A home for arguments that actually want structure.'),
-      findsOneWidget,
-    );
+    expect(find.text('Enter demo'), findsOneWidget);
+
+    await tester.tap(find.text('Enter demo'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('A home for arguments that actually want structure.'), findsOneWidget);
 
     await tester.tap(find.text('Create').last);
     await tester.pumpAndSettle();

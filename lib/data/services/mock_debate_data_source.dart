@@ -6,8 +6,8 @@ import 'package:debator/domain/models/debate_models.dart';
 class MockDebateDataSource implements DebateDataSource {
   MockDebateDataSource() : _topics = _buildTopics(), _debates = _buildDebates();
 
-  static const _prototypeUserName = 'You';
-  static const _prototypeHandle = '@you';
+  static const _demoUserName = 'You';
+  static const _demoHandle = '@you';
 
   final List<DebateTopic> _topics;
   List<Debate> _debates;
@@ -45,8 +45,8 @@ class MockDebateDataSource implements DebateDataSource {
       participants: [
         DebateParticipant(
           id: 'prototype-user',
-          name: _prototypeUserName,
-          handle: _prototypeHandle,
+          name: _demoUserName,
+          handle: _demoHandle,
           side: draft.startingSide,
           rating: 1280,
         ),
@@ -55,12 +55,11 @@ class MockDebateDataSource implements DebateDataSource {
         DebateRound(
           id: 'round-${now.microsecondsSinceEpoch}',
           label: 'Opening case',
-          speakerName: _prototypeUserName,
-          speakerHandle: _prototypeHandle,
+          speakerName: _demoUserName,
+          speakerHandle: _demoHandle,
           side: draft.startingSide,
           summary: draft.openingStatement,
-          evidenceNote:
-              'Prototype draft submitted locally. Ready for Supabase.',
+          evidenceNote: 'Demo draft submitted locally from the product preview.',
         ),
       ],
     );
@@ -86,15 +85,15 @@ class MockDebateDataSource implements DebateDataSource {
     var againstSupport = debate.againstSupport;
 
     final existingIndex = participants.indexWhere(
-      (participant) => participant.handle == _prototypeHandle,
+      (participant) => participant.handle == _demoHandle,
     );
 
     if (existingIndex == -1) {
       participants.add(
         DebateParticipant(
           id: 'prototype-user',
-          name: _prototypeUserName,
-          handle: _prototypeHandle,
+          name: _demoUserName,
+          handle: _demoHandle,
           side: side,
           rating: 1280,
         ),

@@ -1,16 +1,15 @@
-import 'dart:async';
-
+import 'package:debator/app/bootstrap.dart';
+import 'package:debator/app/providers/app_providers.dart';
+import 'package:debator/app/router/app_router.dart';
 import 'package:debator/app/theme/app_theme.dart';
-import 'package:debator/data/repositories/debate_repository.dart';
-import 'package:debator/features/home/debator_home_shell.dart';
-import 'package:debator/features/home/debator_scope.dart';
 import 'package:debator/features/home/debator_view_model.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class DebatorApp extends StatefulWidget {
-  const DebatorApp({super.key, required this.repository});
+  const DebatorApp({super.key, required this.bootstrap});
 
-  final DebateRepository repository;
+  final AppBootstrapResult bootstrap;
 
   @override
   State<DebatorApp> createState() => _DebatorAppState();
@@ -22,8 +21,10 @@ class _DebatorAppState extends State<DebatorApp> {
   @override
   void initState() {
     super.initState();
-    _viewModel = DebatorViewModel(repository: widget.repository);
-    unawaited(_viewModel.initialize());
+    _viewModel = DebatorViewModel(
+      repository: widget.bootstrap.debateRepository,
+    );
+    _viewModel.initialize();
   }
 
   @override
@@ -34,14 +35,26 @@ class _DebatorAppState extends State<DebatorApp> {
 
   @override
   Widget build(BuildContext context) {
-    return DebatorScope(
-      viewModel: _viewModel,
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        title: 'Debator',
-        theme: AppTheme.light(),
-        home: const DebatorHomeShell(),
-      ),
+    return ProviderScope(
+      overrides: [
+        appBootstrapProvider.overrideWithValue(widget.bootstrap),
+        debatorViewModelProvider.overrideWithValue(_viewModel),
+      ],
+      child: const _DebatorRoot(),
+    );
+  }
+}
+
+class _DebatorRoot extends ConsumerWidget {
+  const _DebatorRoot();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return MaterialApp.router(
+      debugShowCheckedModeBanner: false,
+      title: 'Debator',
+      theme: AppTheme.light(),
+      routerConfig: ref.watch(appRouterProvider),
     );
   }
 }

@@ -2,17 +2,20 @@ import 'dart:ui';
 
 import 'package:debator/app/theme/topic_style.dart';
 import 'package:debator/domain/models/debate_models.dart';
-import 'package:debator/features/home/debator_scope.dart';
-import 'package:debator/features/home/debator_view_model.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class DebatorHomeShell extends StatelessWidget {
+import '../../app/providers/app_providers.dart';
+import 'debator_view_model.dart';
+
+class DebatorHomeShell extends ConsumerWidget {
   const DebatorHomeShell({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final viewModel = DebatorScope.of(context);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final viewModel = ref.watch(debatorViewModelProvider);
 
     return ListenableBuilder(
       listenable: viewModel,
@@ -135,22 +138,18 @@ class DebatorHomeShell extends StatelessWidget {
   }
 
   void _openDebateDetail(BuildContext context, String debateId) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => DebateDetailPage(debateId: debateId),
-      ),
-    );
+    context.push('/debate/$debateId');
   }
 }
 
-class DebateDetailPage extends StatelessWidget {
+class DebateDetailPage extends ConsumerWidget {
   const DebateDetailPage({super.key, required this.debateId});
 
   final String debateId;
 
   @override
-  Widget build(BuildContext context) {
-    final viewModel = DebatorScope.of(context);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final viewModel = ref.watch(debatorViewModelProvider);
 
     return ListenableBuilder(
       listenable: viewModel,
@@ -503,7 +502,7 @@ class _TopicsTabState extends State<_TopicsTab> {
   }
 }
 
-class _CreateDebateTab extends StatefulWidget {
+class _CreateDebateTab extends ConsumerStatefulWidget {
   const _CreateDebateTab({
     required this.viewModel,
     required this.isDesktop,
@@ -515,10 +514,10 @@ class _CreateDebateTab extends StatefulWidget {
   final ValueChanged<Debate> onOpenDebate;
 
   @override
-  State<_CreateDebateTab> createState() => _CreateDebateTabState();
+  ConsumerState<_CreateDebateTab> createState() => _CreateDebateTabState();
 }
 
-class _CreateDebateTabState extends State<_CreateDebateTab> {
+class _CreateDebateTabState extends ConsumerState<_CreateDebateTab> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _titleController;
   late final TextEditingController _propositionController;
@@ -555,6 +554,8 @@ class _CreateDebateTabState extends State<_CreateDebateTab> {
 
   @override
   Widget build(BuildContext context) {
+    final appConfig = ref.watch(appConfigProvider);
+    final viewerProfile = ref.watch(currentViewerProfileProvider);
     final topics = widget.viewModel.topics;
     final effectiveTopicId =
         _selectedTopicId ?? (topics.isNotEmpty ? topics.first.id : null);
@@ -577,13 +578,26 @@ class _CreateDebateTabState extends State<_CreateDebateTab> {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    'Create a proposition, choose your side, and publish the first round. This prototype stores data locally today, with a clean seam for Supabase next.',
+                    appConfig.isMock
+                        ? 'Create a proposition, choose your side, and publish the first round. Demo mode keeps the data local so you can test the debate loop quickly.'
+                        : 'Create a proposition, choose your side, and publish the first round under your Debator identity.',
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       color: Theme.of(
                         context,
                       ).colorScheme.onSurface.withValues(alpha: 0.76),
                     ),
                   ),
+                  if (viewerProfile != null) ...[
+                    const SizedBox(height: 16),
+                    _InlineIdentityNotice(
+                      title: appConfig.isMock
+                          ? 'Publishing as the demo debator'
+                          : 'Publishing from your account',
+                      description: appConfig.isMock
+                          ? '${viewerProfile.handle} keeps this preview coherent while you test the product loop.'
+                          : '${viewerProfile.displayName} ${viewerProfile.handle} will appear on the opening round and debate roster.',
+                    ),
+                  ],
                   const SizedBox(height: 24),
                   LayoutBuilder(
                     builder: (context, constraints) {
@@ -842,20 +856,30 @@ class _CreateDebateTabState extends State<_CreateDebateTab> {
   }
 }
 
-class _ProfileTab extends StatelessWidget {
+class _ProfileTab extends ConsumerWidget {
   const _ProfileTab({required this.viewModel, required this.isDesktop});
 
   final DebatorViewModel viewModel;
   final bool isDesktop;
 
   @override
-  Widget build(BuildContext context) {
-    final yourDebates = viewModel.prototypeUserDebates;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final appConfig = ref.watch(appConfigProvider);
+    final viewerProfile = ref.watch(currentViewerProfileProvider);
+    final yourDebates = viewerProfile == null
+        ? const <Debate>[]
+        : viewModel.debatesForParticipantHandle(viewerProfile.handle);
     final exploredTopics = yourDebates
         .map((debate) => viewModel.topicById(debate.topicId)?.name)
         .whereType<String>()
         .toSet()
         .length;
+    final title = appConfig.isMock
+        ? 'Demo identity'
+        : (viewerProfile?.displayName ?? 'Your account');
+    final subtitle = appConfig.isMock
+        ? 'This preview keeps one consistent debator identity so the product loop still feels real.'
+        : '${viewerProfile?.handle ?? '@debator'} • ${viewerProfile?.email ?? 'Signed in'}';
 
     return _AdaptiveScrollbar(
       enabled: isDesktop,
@@ -899,14 +923,14 @@ class _ProfileTab extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Prototype profile',
+                                title,
                                 style: Theme.of(
                                   context,
                                 ).textTheme.headlineSmall,
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                'This MVP treats you as the local prototype user. Once Supabase auth is connected, this area can become real identity, reputation, drafts, and saved debates.',
+                                subtitle,
                                 style: Theme.of(context).textTheme.bodyLarge
                                     ?.copyWith(
                                       color: Theme.of(context)
@@ -923,14 +947,14 @@ class _ProfileTab extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Prototype profile',
+                                  title,
                                   style: Theme.of(
                                     context,
                                   ).textTheme.headlineSmall,
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
-                                  'This MVP treats you as the local prototype user. Once Supabase auth is connected, this area can become real identity, reputation, drafts, and saved debates.',
+                                  subtitle,
                                   style: Theme.of(context).textTheme.bodyLarge
                                       ?.copyWith(
                                         color: Theme.of(context)
@@ -939,9 +963,41 @@ class _ProfileTab extends StatelessWidget {
                                             .withValues(alpha: 0.76),
                                       ),
                                 ),
+                                const SizedBox(height: 12),
+                                Wrap(
+                                  spacing: 10,
+                                  runSpacing: 10,
+                                  children: [
+                                    _ProfilePill(
+                                      icon: Icons.verified_user_rounded,
+                                      label: viewerProfile == null
+                                          ? 'Profile loading'
+                                          : 'Rating ${viewerProfile.rating}',
+                                    ),
+                                    _ProfilePill(
+                                      icon: appConfig.isMock
+                                          ? Icons.explore_rounded
+                                          : Icons.cloud_done_rounded,
+                                      label: appConfig.isMock
+                                          ? 'Demo identity'
+                                          : 'Live identity',
+                                    ),
+                                  ],
+                                ),
                               ],
                             ),
                           ),
+                        if (!appConfig.isMock && viewerProfile != null) ...[
+                          SizedBox(
+                            width: isStacked ? 0 : 18,
+                            height: isStacked ? 18 : 0,
+                          ),
+                          FilledButton.tonalIcon(
+                            onPressed: () => context.push('/account'),
+                            icon: const Icon(Icons.settings_rounded),
+                            label: const Text('Account'),
+                          ),
+                        ],
                       ],
                     );
                   },
@@ -956,20 +1012,28 @@ class _ProfileTab extends StatelessWidget {
                 _MetricCard(
                   title: 'Debates launched',
                   value: '${yourDebates.length}',
-                  subtitle: 'Debates you created or joined in this prototype',
+                  subtitle: appConfig.isMock
+                      ? 'Debates touched by the demo identity in this preview'
+                      : 'Debates tied to your current account identity',
                   icon: Icons.rocket_launch_rounded,
                 ),
                 _MetricCard(
                   title: 'Topics explored',
                   value: '$exploredTopics',
-                  subtitle: 'Different arenas you have already touched',
+                  subtitle: appConfig.isMock
+                      ? 'Different arenas you have already touched'
+                      : 'Topics your account has already entered',
                   icon: Icons.hub_rounded,
                 ),
-                const _MetricCard(
-                  title: 'Supabase seam',
-                  value: 'Ready',
-                  subtitle: 'Repository and datasource split already in place',
-                  icon: Icons.cloud_done_rounded,
+                _MetricCard(
+                  title: 'Environment',
+                  value: appConfig.environment.value,
+                  subtitle: appConfig.isMock
+                      ? 'Preview mode with local sample data'
+                      : 'Live auth and database wiring active',
+                  icon: appConfig.isMock
+                      ? Icons.explore_rounded
+                      : Icons.cloud_done_rounded,
                 ),
               ],
             ),
@@ -1388,7 +1452,7 @@ class _ShellHeader extends StatelessWidget {
       0 => 'Find the debates already attracting strong cases.',
       1 => 'Filter by arena and open the propositions you care about.',
       2 => 'Publish a proposition and invite the other side in.',
-      _ => 'See the prototype account and community principles.',
+      _ => 'See your identity, account status, and community principles.',
     };
 
     return Card(
@@ -1459,6 +1523,91 @@ class _ShellHeader extends StatelessWidget {
             );
           },
         ),
+      ),
+    );
+  }
+}
+
+class _InlineIdentityNotice extends StatelessWidget {
+  const _InlineIdentityNotice({
+    required this.title,
+    required this.description,
+  });
+
+  final String title;
+  final String description;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: colorScheme.primary.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: colorScheme.outlineVariant.withValues(alpha: 0.84),
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.account_circle_rounded, color: colorScheme.primary),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: Theme.of(context).textTheme.titleSmall),
+                const SizedBox(height: 4),
+                Text(
+                  description,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurface.withValues(alpha: 0.74),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProfilePill extends StatelessWidget {
+  const _ProfilePill({required this.icon, required this.label});
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.primary.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(
+          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.84),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: theme.colorScheme.primary),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: theme.textTheme.labelLarge?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
       ),
     );
   }
