@@ -4,6 +4,6 @@ import 'package:flutter/material.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final repository = await AppBootstrap.createRepository();
-  runApp(DebatorApp(repository: repository));
+  final bootstrap = await AppBootstrap.create();
+  runApp(DebatorApp(bootstrap: bootstrap));
 }
